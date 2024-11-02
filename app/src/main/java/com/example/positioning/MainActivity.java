@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
-        sendUDP(500);
+
     }
 
     @Override
@@ -75,20 +75,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     azimuthInDegrees += 360; // Ensure the azimuth is positive
                 }
 
+                int angle2InDegrees = (int) Math.toDegrees(orientation[1]);
+                if (angle2InDegrees < 0) {
+                    angle2InDegrees += 360; // Ensure the azimuth is positive
+                }
+
+                int angle3InDegrees = (int) Math.toDegrees(orientation[2]);
+                if (angle3InDegrees < 0) {
+                    angle3InDegrees += 360; // Ensure the azimuth is positive
+                }
+
                 // Send azimuth over UDP
-                sendUDP(azimuthInDegrees);
+                sendUDP(azimuthInDegrees,angle2InDegrees,angle3InDegrees);
             }
         }
     }
 
-    private void sendUDP(final int azimuth) {
+    private void sendUDP(final int azimuth,final int angle2,final int angle3) {
         // Sending UDP in a new thread to avoid blocking the main thread
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     DatagramSocket socket = new DatagramSocket();
-                    String message = String.valueOf(azimuth);
+                    String message = String.valueOf(azimuth)+","+String.valueOf(angle2)+","+String.valueOf(angle3);
                     byte[] buffer = message.getBytes();
 
                     InetAddress address = InetAddress.getByName(udpAddress);
