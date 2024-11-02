@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -22,16 +23,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private final String udpAddress = "10.252.93.103"; // Replace with your server IP
     private final int udpPort = 5000; // Replace with your server port
-
+    private boolean shouldSendData = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
 
         // Initialize SensorManager and sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
+        // Set up the button and its click listener
+        Button sendDataButton = findViewById(R.id.sendDataButton);
+        sendDataButton.setOnClickListener(v -> shouldSendData = true); // Set flag to true when button is clicked
 
     }
 
@@ -85,8 +91,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     angle3InDegrees += 360; // Ensure the azimuth is positive
                 }
 
+
                 // Send azimuth over UDP
-                sendUDP(azimuthInDegrees,angle2InDegrees,angle3InDegrees);
+                if (shouldSendData) {
+                    sendUDP(azimuthInDegrees, angle2InDegrees, angle3InDegrees);
+                    shouldSendData = false;
+                }
             }
         }
     }
