@@ -1,4 +1,5 @@
 package com.example.positioning;
+import android.annotation.SuppressLint;
 import android.media.MediaPlayer;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -16,7 +17,6 @@ import java.net.InetAddress;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.Handler;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.view.animation.Animation;
@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean shouldSendData = false;
     public Button sendDataButton;
 
+    @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +55,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // Set up the button and its click listener
         ImageView gunImage = findViewById(R.id.gun_image);
-        Animation shrinkGrowAnimation = AnimationUtils.loadAnimation(this, R.anim.shrink_grow);
-        gunshotSound = MediaPlayer.create(this, R.raw.gunshot);
+
         continuousSound = MediaPlayer.create(this, R.raw.continuous_sound);
         continuousSound.setLooping(true);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -64,7 +64,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     // Start animation
-                    gunImage.startAnimation(shrinkGrowAnimation);
+                    Animation shrinkAnimation = AnimationUtils.loadAnimation(this, R.anim.shrink);
+                    gunImage.startAnimation(shrinkAnimation);
 
                     // Start continuous sound
                     if (!continuousSound.isPlaying()) {
@@ -98,6 +99,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         handler.removeCallbacks(vibrationRunnable);
                         vibrator.cancel();
                     }
+                    Animation growAnimation = AnimationUtils.loadAnimation(this, R.anim.grow);
+                    gunImage.startAnimation(growAnimation);
+
 
                     // Play gunshot sound
                     if (gunshotSound.isPlaying()) {
