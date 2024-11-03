@@ -5,23 +5,39 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        tools:layout_editor_absoluteX="27dp"
-        tools:layout_editor_absoluteY="82dp">
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/background_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/background"
+            android:contentDescription="Background image" />
+
+        <ImageView
+            android:id="@+id/gun_image"
+            android:layout_width="350dp"
+            android:layout_height="350dp"
+            android:layout_centerInParent="true"
+            app:srcCompat="@drawable/gun"
+            android:scaleType="fitCenter"/>
 
         <Button
             android:id="@+id/sendDataButton"
-            android:layout_width="411dp"
-            android:layout_height="744dp"
-            android:text="Activate"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:text=""
             app:cornerRadius="0px" />
-    </LinearLayout>
+
+    </RelativeLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,18 +1,25 @@
 package com.example.positioning;
-
+import android.media.MediaPlayer;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -20,14 +27,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor accelerometer;
     private Sensor magnetometer;
 
+    private Vibrator vibrator;
     private float[] gravity;
     private float[] geomagnetic;
-
+    private MediaPlayer gunshotSound;
     private final String udpAddress = "10.252.93.103"; // Replace with your server IP
     private final int udpPort = 4999; // Replace with your server port
     private boolean shouldSendData = false;
     public Button sendDataButton;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,8 +49,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
         // Set up the button and its click listener
+        ImageView gunImage = findViewById(R.id.gun_image);
+        Animation shrinkGrowAnimation = AnimationUtils.loadAnimation(this, R.anim.shrink_grow);
+        gunshotSound = MediaPlayer.create(this, R.raw.gunshot);
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         sendDataButton = findViewById(R.id.sendDataButton);
+        sendDataButton.setOnClickListener(v -> {
+            gunImage.startAnimation(shrinkGrowAnimation);
 
+            if (gunshotSound.isPlaying()) {
+                gunshotSound.stop();
+                gunshotSound.reset();
+                gunshotSound = MediaPlayer.create(this, R.raw.gunshot); // Re-initialize the MediaPlayer
+            }
+            gunshotSound.start();
+            if (vibrator != null) {
+                // Vibrate for 300 milliseconds
+                VibrationEffect vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE);
+                vibrator.cancel(); // Cancel any ongoing vibration to restart it
+                vibrator.vibrate(vibrationEffect);
+            }
+        });
     }
 
     @Override
@@ -59,6 +87,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.unregisterListener(this);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Release MediaPlayer resources to avoid memory leaks
+        if (gunshotSound != null) {
+            gunshotSound.release();
+        }
+        if (vibrator != null) {
+            vibrator.cancel();
+        }
+    }
     @Override
     public void onSensorChanged(SensorEvent event) {
         // Get sensor data
