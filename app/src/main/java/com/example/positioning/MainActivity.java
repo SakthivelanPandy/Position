@@ -55,17 +55,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // Set up the button and its click listener
         ImageView gunImage = findViewById(R.id.gun_image);
-
+        gunshotSound = MediaPlayer.create(this, R.raw.gunshot);
         continuousSound = MediaPlayer.create(this, R.raw.continuous_sound);
         continuousSound.setLooping(true);
+        Animation shrinkAnimation = AnimationUtils.loadAnimation(this, R.anim.shrink);
+        Animation growAnimation = AnimationUtils.loadAnimation(this, R.anim.grow);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         sendDataButton = findViewById(R.id.sendDataButton);
         sendDataButton.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     // Start animation
-                    Animation shrinkAnimation = AnimationUtils.loadAnimation(this, R.anim.shrink);
-                    gunImage.startAnimation(shrinkAnimation);
+                     gunImage.startAnimation(shrinkAnimation);
 
                     // Start continuous sound
                     if (!continuousSound.isPlaying()) {
@@ -99,7 +100,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         handler.removeCallbacks(vibrationRunnable);
                         vibrator.cancel();
                     }
-                    Animation growAnimation = AnimationUtils.loadAnimation(this, R.anim.grow);
                     gunImage.startAnimation(growAnimation);
 
 
