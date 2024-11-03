@@ -7,7 +7,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
-
+import android.view.MotionEvent;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import java.net.DatagramPacket;
@@ -15,6 +15,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -28,9 +29,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor magnetometer;
 
     private Vibrator vibrator;
+    private Handler handler = new Handler();
+    private Runnable vibrationRunnable;
     private float[] gravity;
     private float[] geomagnetic;
     private MediaPlayer gunshotSound;
+    private MediaPlayer continuousSound;
     private final String udpAddress = "10.252.93.103"; // Replace with your server IP
     private final int udpPort = 4999; // Replace with your server port
     private boolean shouldSendData = false;
@@ -52,23 +56,59 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ImageView gunImage = findViewById(R.id.gun_image);
         Animation shrinkGrowAnimation = AnimationUtils.loadAnimation(this, R.anim.shrink_grow);
         gunshotSound = MediaPlayer.create(this, R.raw.gunshot);
+        continuousSound = MediaPlayer.create(this, R.raw.continuous_sound);
+        continuousSound.setLooping(true);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         sendDataButton = findViewById(R.id.sendDataButton);
-        sendDataButton.setOnClickListener(v -> {
-            gunImage.startAnimation(shrinkGrowAnimation);
+        sendDataButton.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    // Start animation
+                    gunImage.startAnimation(shrinkGrowAnimation);
 
-            if (gunshotSound.isPlaying()) {
-                gunshotSound.stop();
-                gunshotSound.reset();
-                gunshotSound = MediaPlayer.create(this, R.raw.gunshot); // Re-initialize the MediaPlayer
+                    // Start continuous sound
+                    if (!continuousSound.isPlaying()) {
+                        continuousSound.start();
+                    }
+
+                    // Start continuous vibration
+                    if (vibrator != null) {
+                        vibrationRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                VibrationEffect vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE);
+                                vibrator.vibrate(vibrationEffect);
+                                handler.postDelayed(this, 500);
+                            }
+                        };
+                        handler.post(vibrationRunnable);
+                    }
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    // Stop the continuous sound
+                    if (continuousSound.isPlaying()) {
+                        continuousSound.pause();
+                        continuousSound.seekTo(0);
+                    }
+
+                    // Stop the continuous vibration
+                    if (vibrator != null) {
+                        handler.removeCallbacks(vibrationRunnable);
+                        vibrator.cancel();
+                    }
+
+                    // Play gunshot sound
+                    if (gunshotSound.isPlaying()) {
+                        gunshotSound.stop();
+                        gunshotSound.reset();
+                        gunshotSound = MediaPlayer.create(this, R.raw.gunshot);
+                    }
+                    gunshotSound.start();
+                    break;
             }
-            gunshotSound.start();
-            if (vibrator != null) {
-                // Vibrate for 300 milliseconds
-                VibrationEffect vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE);
-                vibrator.cancel(); // Cancel any ongoing vibration to restart it
-                vibrator.vibrate(vibrationEffect);
-            }
+            return true;
         });
     }
 
