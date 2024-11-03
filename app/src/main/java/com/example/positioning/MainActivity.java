@@ -35,10 +35,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float[] geomagnetic;
     private MediaPlayer gunshotSound;
     private MediaPlayer continuousSound;
+    private Animation shrinkAnimation;
+    private Animation growAnimation;
+    private ImageView gunImage;
     private final String udpAddress = "10.252.93.103"; // Replace with your server IP
     private final int udpPort = 4999; // Replace with your server port
     private boolean shouldSendData = false;
     public Button sendDataButton;
+
 
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -54,12 +58,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
         // Set up the button and its click listener
-        ImageView gunImage = findViewById(R.id.gun_image);
+        gunImage = findViewById(R.id.gun_image);
         gunshotSound = MediaPlayer.create(this, R.raw.gunshot);
         continuousSound = MediaPlayer.create(this, R.raw.continuous_sound);
         continuousSound.setLooping(true);
-        Animation shrinkAnimation = AnimationUtils.loadAnimation(this, R.anim.shrink);
-        Animation growAnimation = AnimationUtils.loadAnimation(this, R.anim.grow);
+        shrinkAnimation = AnimationUtils.loadAnimation(this, R.anim.shrink);
+        growAnimation = AnimationUtils.loadAnimation(this, R.anim.grow);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         sendDataButton = findViewById(R.id.sendDataButton);
         sendDataButton.setOnTouchListener((v, event) -> {
